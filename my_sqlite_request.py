@@ -23,6 +23,7 @@ class MySqliteRequest():
         if isList(column_names):
             columns = []
             for name in column_names:
+                name = name.strip()
                 values = self.get_column_values(name)
                 columns.append(values)
             
@@ -31,7 +32,7 @@ class MySqliteRequest():
             self.response = columns
         
         elif isStr(column_names):
-            values = self.get_column_values(column_names)
+            values = self.get_column_values(column_names.strip())
             for i in range(len(values)):
                 values[i] = [values[i]]
             self.response = values
@@ -43,7 +44,7 @@ class MySqliteRequest():
         data = self.data
         
         for i in range(len(data)):
-            if data[i][column_name] == criteria:
+            if data[i][column_name.strip()] == criteria.strip():
                 result.append(self.response[i])
         
         self.response = result
@@ -51,11 +52,11 @@ class MySqliteRequest():
 
     def join(self, column1: str, filename2: str, column2: str) -> object:
         data = self.data
-        data2 = read_csv_file(filename2)
+        data2 = read_csv_file(filename2.strip())
         
         for X in data:
             for Y in data2:
-                if X[column1] == Y[column2]:
+                if X[column1.strip()] == Y[column2.strip()]:
                     for key, value in Y.items():
                         if key not in X:
                             X[key] = value
@@ -67,16 +68,16 @@ class MySqliteRequest():
         return self
 
     def order(self, order: str, column_name: str) -> object:
-        if not valid_order(order):
+        if not valid_order(order.strip()):
             return None
 
-        self.data.sort(reverse = True if order.upper() == 'DESC' else False, key = itemgetter(column_name))
+        self.data.sort(reverse = True if order.upper() == 'DESC' else False, key = itemgetter(column_name.strip()))
         self.response = self.data
         
         return self
 
     def insert(self, filename: str) -> object:
-        return self._from(filename)
+        return self._from(filename.strip())
 
     def values(self, item: dict) -> object:
         self.data.append(item)
@@ -84,7 +85,7 @@ class MySqliteRequest():
         return self
 
     def update(self, filename: str) -> object:
-        return self._from(filename)
+        return self._from(filename.strip())
 
     def set(self, data: dict) -> object:
         table = self.response
@@ -106,6 +107,15 @@ class MySqliteRequest():
         self.response = self.data
         return self
 
-    def run(self):
+    def run(self, pretty=False):
+        if pretty:
+            for item in self.response:
+                if len(item) == 1:
+                    item = item[0]
+                for key, value in item.items():
+                    print(key,':',value)
+                print()
+            return
+        
         for item in self.response:
             print(item)

@@ -39,13 +39,3 @@ def read_csv_file(filename: str) -> list:
         data.append(item)
     # print_dict(data)
     return data
-
-
-def read_csv_str(csv: str) -> list:
-    table = csv.split('\n')
-    for i in range(len(table)):
-        table[i] = table[i].split(',')
-    return trim_values(table)
-
-def isFile(csv_name: str) -> bool:
-    return path.exists(csv_name)
