@@ -1,93 +1,111 @@
-import csv
-
-def trim_values(table: list) -> list:
-    for i in range(len(table)):
-        for j in range(len(table[i])):
-            table[i][j] = table[i][j].strip()
-            if table[i][j][0] == '\"':
-                table[i][j] = table[i][j][1:-1]  
-    return table 
-
-def read_csv_file(csv_name: str) -> list:
-    table = []
-    with open(csv_name) as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter='\n')
-        for row in csv_reader:
-            table.append(row[0].split(','))   
-    return trim_values(table)
-
-def isList(var: str or list) -> bool:
-    return type(var) == list
-
-def isStr(var: str or list) -> bool:
-    return type(var) == str
+from fileHandler import read_csv_file, print_dict
+from typeHandler import isList, isStr, transpose, valid_order
+from operator import itemgetter
 
 class MySqliteRequest():
     def __init__(self):
-        self.table = None
+        self.data = None
         self.response = None
 
-    def _from(self, table_name: str) -> object:
-        self.table = read_csv_file(table_name)
-        self.response = self.table
+    def _from(self, filename: str) -> object:
+        self.data = read_csv_file(filename)
+        self.response = self.data
         return self
 
-    def get_column_values(self, index: int) -> list:
+    def get_column_values(self, column: str) -> list:
         values = []
-        for row in self.table[1:]:
-            values.append(row[index])
+        for item in self.data:
+            val = {column : item[column]}
+            values.append(val)
         return values
 
     def select(self, column_names: list or str) -> object:
         if isList(column_names):
             columns = []
             for name in column_names:
-                index = self.table.index(name)
-                values = self.get_column_values(index)
+                values = self.get_column_values(name)
                 columns.append(values)
+            
+            columns = transpose(columns)
             
             self.response = columns
         
         elif isStr(column_names):
-            index = self.table.index(column_names)
-            self.response = self.get_column_values(index)
-        
-        else:
-            print('Invalid argument for SELECT query.\n')
-            return None
+            values = self.get_column_values(column_names)
+            for i in range(len(values)):
+                values[i] = [values[i]]
+            self.response = values
         
         return self
 
     def where(self, column_name: str, criteria: any) -> object:
         result = []
-        index = self.table.index(column_name)
-
-        for row in self.table:
-            if row[index] == criteria:
-                result.append(self.response[index])
+        data = self.data
+        
+        for i in range(len(data)):
+            if data[i][column_name] == criteria:
+                result.append(self.response[i])
+        
         self.response = result
         return self
 
-    def join(self, column_on_db_a: str, filename_db_b: str, column_on_db_b: str):
-        pass
+    def join(self, column1: str, filename2: str, column2: str) -> object:
+        data = self.data
+        data2 = read_csv_file(filename2)
+        
+        for X in data:
+            for Y in data2:
+                if X[column1] == Y[column2]:
+                    for key, value in Y.items():
+                        if key not in X:
+                            X[key] = value
+                    continue
+        
+        self.data = data
+        self.response = data
+        
+        return self
 
     def order(self, order: str, column_name: str) -> object:
-        pass
+        if not valid_order(order):
+            return None
 
-    def insert(self, table_name: str) -> object:
-        pass
+        self.data.sort(reverse = True if order.upper() == 'DESC' else False, key = itemgetter(column_name))
+        self.response = self.data
+        
+        return self
 
-    def values(self, data) -> object:
-        pass
+    def insert(self, filename: str) -> object:
+        return self._from(filename)
 
-    def update(self, table_name: str) -> object:
-        pass
+    def values(self, item: dict) -> object:
+        self.data.append(item)
+        self.response = self.data
+        return self
 
-    def set(self, data) -> object:
-        pass
+    def update(self, filename: str) -> object:
+        return self._from(filename)
+
+    def set(self, data: dict) -> object:
+        table = self.response
+
+        keys = list(data.keys())
+        values = list(data.values())
+
+        for i in range(len(table)):
+            for j in range(len(keys)):
+                table[i][keys[j]] = values[j]
+        
+        self.response = table
+        return self
 
     def delete(self) -> object:
-        pass
+        for item in self.response:
+            if item in self.data:
+                self.data.remove(item)
+        self.response = self.data
+        return self
 
     def run(self):
-        pass
+        for item in self.response:
+            print(item)
