@@ -1,6 +1,7 @@
 import csv
 import os.path
 from os import path
+from typeHandler import isNum, isFloat
 
 def trim_values(table: list) -> list:
     for i in range(len(table)):
@@ -32,10 +33,13 @@ def read_csv_file(filename: str) -> list:
     header = table[0]
     table = table[1:]
     data = []
+    
     for row in table:
         item = {}
         for i in range(len(header)):
+            if isNum(row[i]):
+                row[i] = float(row[i]) if isFloat(row[i]) else int(row[i])
             item[header[i]] = row[i]
         data.append(item)
-    # print_dict(data)
+    
     return data

@@ -1,5 +1,5 @@
 from fileHandler import read_csv_file, print_dict
-from typeHandler import isList, isStr, transpose, valid_order
+from typeHandler import isList, isStr, isNum, transpose, valid_order
 from operator import itemgetter
 
 class MySqliteRequest():
@@ -95,6 +95,13 @@ class MySqliteRequest():
 
         for i in range(len(table)):
             for j in range(len(keys)):
+                if isNum(table[i][keys[j]]) and not isNum(values[j]):
+                    print('Invalid type for SET query: %s must be a number' % values[j])
+                    quit
+                # elif not isNum(table[i][keys[j]]) and isNum(values[j]):
+                #     print('Invalid type for SET query: %d must be a string' % values[j])
+                #     quit
+                
                 table[i][keys[j]] = values[j]
         
         self.response = table
@@ -114,7 +121,8 @@ class MySqliteRequest():
                     item = item[0]
                 for key, value in item.items():
                     print(key,':',value)
-                print()
+                if len(item.items()) != 1:
+                    print()
             return
         
         for item in self.response:
