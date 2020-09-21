@@ -1,4 +1,4 @@
-from fileHandler import read_csv_file, print_dict
+from fileHandler import read_csv_file, save
 from typeHandler import isList, isStr, isNum, transpose, valid_order, validate_values
 from operator import itemgetter
 from cmdHandler import error
@@ -8,11 +8,13 @@ class MySqliteRequest():
 
     # initialize the object with filename if is given
     def __init__(self, filename = None):
+        self.filename = filename if filename else None
         self.data = None if not filename else read_csv_file(filename)
         self.response = self.data
 
     # FROM query
     def _from(self, filename: str) -> object:
+        self.filename = filename
         self.data = read_csv_file(filename)
         self.response = self.data
         return self
@@ -110,6 +112,7 @@ class MySqliteRequest():
 
     # INSERT INTO query
     def insert(self, filename: str) -> object:
+        self.filename = filename
         return self._from(filename.strip())
 
     # VALUES for INSERT INTO query
@@ -126,6 +129,7 @@ class MySqliteRequest():
 
     # UPDATE query
     def update(self, filename: str) -> object:
+        self.filename = filename
         return self._from(filename.strip())
 
     # SET for UPDATE query
@@ -170,3 +174,5 @@ class MySqliteRequest():
         
         for item in self.response:
             print(item)
+        
+        save(self.response, self.filename)

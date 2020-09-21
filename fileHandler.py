@@ -57,3 +57,16 @@ def get_table_columns(filename: str) -> list:
                 if row[0][i][-1] == '\"':
                     row[0][i] = row[0][i][:-1]
             return row[0]
+
+# save data into csv
+def save(data: list, filename: str):
+    with open(filename + '_new.csv', 'w') as file: 
+        write = csv.writer(file) 
+        
+        write.writerow(get_table_columns(filename)) 
+        rows = []
+        for item in data:
+            rows.append(list(item.values()))
+        
+        write.writerows(rows)
+    print('The query result was saved as %s_new.csv' % filename) 
