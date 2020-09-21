@@ -3,14 +3,63 @@ from typeHandler import isStr, isList, print_hash
 from cmdHandler import process_cmd
 from test import test
 import sys
+from queries import SELECT, DELETE, UPDATE, INSERT, VALUES, WHERE, ORDER, JOIN, FROM, INTO, DESC, ASC, SET
 
-def run():
-    commands = process_cmd()
-    for item in commands:
-        print()
-        print_hash(item)
+# function to execute commands
+def execute(commands: dict):
+    actions = commands['actions']
+    request = MySqliteRequest()
+
+    if FROM in actions:
+        values = commands[FROM]
+        request = request._from(values[0])
+
+    if UPDATE in actions:
+        values = commands[UPDATE]
+        request = request.update(values)
+
+    if INSERT in actions:
+        values = commands[INSERT]
+        request = request.update(values)
+
+    if VALUES in actions:
+        values = commands[VALUES]
+        request = request.values(values)
+    
+    if JOIN in actions:
+        values = commands[JOIN]
+        request = request.join(values[0], values[1], values[2])
+
+    if ORDER in actions:
+        values = commands[ORDER]
+        request = request.order(values[0], values[1])
+
+    if WHERE in actions:
+        values = commands[WHERE][0]
+        request = request.where(values[0], values[1])
+
+    if SET in actions:
+        values = commands[SET]
+        request = request.set(values)
+    
+    if DELETE in actions:
+        request = request.delete()
+
+    if SELECT in actions:
+        values = commands[SELECT]
+        request = request.select(values)
         
+    request.run(pretty = False)
 
+# function to run the program
+def run():
+    # get commands from command line
+    commands = process_cmd()
+
+    # execute the commands
+    execute(commands)
+
+# Don't need this function yet
 def get_request(text: str)->list:
     data = text.split('.')
     functions = []
@@ -37,7 +86,10 @@ def get_request(text: str)->list:
             request = request.where(value[0], value[1])   
     
     request.run(pretty=True)
-    
+
+# main
 if __name__ == '__main__':
     run()
-    # test(False)
+
+    # Uncomment the line below to test the program
+    # test(pretty = False)

@@ -1,25 +1,21 @@
 from my_sqlite_request import MySqliteRequest
 
-ACCOUNTS = './test/accounts.csv'
-TRANSACTIONS = './test/transactions.csv'
-GRADES = './test/grades.csv'
-BIOSTATS = './test/biostats.csv'
+ACCOUNTS = 'accounts.csv'
+TRANSACTIONS = 'transactions.csv'
+GRADES = 'grades.csv'
+BIOSTATS = 'biostats.csv'
 
 def test_grades(request: MySqliteRequest, pretty: bool):
     print("\nSELECT 'First name' FROM grades:")
-    request = request._from(GRADES)
-    request = request.select('First name')
+    request = MySqliteRequest(GRADES).select('First name')
     request.run(pretty = pretty)
 
     print("\nSELECT 'First name', 'Last name', 'Grade' FROM grades:")
-    request = request._from(GRADES)
-    request = request.select(['First name', 'Last name', 'Grade'])
+    request = request._from(GRADES).select(['First name', 'Last name', 'Grade'])
     request.run(pretty=pretty)
 
     print("\nSELECT 'First name', 'Last name', 'Final', 'Grade' FROM grades ORDER BY 'Final':")
-    request = request._from(GRADES)
-    request = request.order('ASC', 'Final')
-    request = request.select(['First name', 'Last name', 'Final', 'Grade'])
+    request = request._from(GRADES).order('ASC', 'Final').select(['First name', 'Last name', 'Final', 'Grade'])
     request.run(pretty=pretty)
 
     print("\nSELECT 'First name', 'Last name', 'Final', 'Grade' FROM grades ORDER BY 'Final' DESC:")
@@ -32,7 +28,7 @@ def test_grades(request: MySqliteRequest, pretty: bool):
 def test_biostats(request: MySqliteRequest, pretty: bool):
     print("\nSELECT * FROM biostats WHERE sex='M'")
     request = request._from(BIOSTATS)
-    request = request.select(['Name', 'Sex'])
+    request = request.select(['Name'])
     request = request.where('Sex', 'M')
     request.run(pretty=pretty)
     
@@ -47,7 +43,7 @@ def test_biostats(request: MySqliteRequest, pretty: bool):
     print("\nUPDATE biostats SET Name='Sanzhar', Sex='M', Age=20 WHERE Name='Ruth'")
     request = request.update(BIOSTATS)
     request = request.where('Name', 'Ruth')
-    request = request.set({'Name': 'Sanzhar', 'Sex': 'M', 'Age': '20'})
+    request = request.set({'Name': 'Sanzhar', 'Sex': 'M', 'Age': 20})
     request = request.select(['Name', 'Sex', 'Age'])
     request.run(pretty=pretty)
 
